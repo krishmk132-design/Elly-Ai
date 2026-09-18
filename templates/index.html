@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elly AI - Chatbot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --deep: #0F3D45;
+    --teal: #1C7293;
+    --teal-light: #2F9BC4;
+    --accent: #21C6A8;
+    --bg-page: #EAF1F2;
+    --bubble-bot: #FFFFFF;
+    --bubble-user-1: #1C7293;
+    --bubble-user-2: #21C6A8;
+    --ink: #1D2A35;
+    --muted: #7C8C93;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(33,198,168,0.12), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(28,114,147,0.15), transparent 45%),
+      var(--bg-page);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .chat-box {
+    width: 520px;
+    max-width: 100%;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(15,61,69,0.18), 0 2px 8px rgba(15,61,69,0.08);
+    display: flex;
+    flex-direction: column;
+    height: 640px;
+    overflow: hidden;
+  }
+
+  header {
+    background: linear-gradient(135deg, var(--deep) 0%, var(--teal) 60%, var(--teal-light) 100%);
+    color: white;
+    padding: 20px 22px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .bot-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.18);
+    border: 1.5px solid rgba(255,255,255,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .bot-avatar svg { display: block; }
+
+  .header-text h1 {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+
+  .header-text p {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: rgba(255,255,255,0.8);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #4ADE80;
+    box-shadow: 0 0 0 0 rgba(74,222,128,0.6);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(74,222,128,0.5); }
+    70% { box-shadow: 0 0 0 6px rgba(74,222,128,0); }
+    100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); }
+  }
+
+  #messages {
+    flex: 1;
+    padding: 20px 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: linear-gradient(180deg, #F7FAFB 0%, #EEF4F5 100%);
+  }
+
+  #messages::-webkit-scrollbar { width: 6px; }
+  #messages::-webkit-scrollbar-thumb { background: rgba(28,114,147,0.25); border-radius: 10px; }
+
+  .row {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    animation: slideIn 0.25s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .row.user { justify-content: flex-end; }
+  .row.bot { justify-content: flex-start; }
+
+  .avatar-sm {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    flex-shrink: 0;
+    color: white;
+  }
+
+  .row.bot .avatar-sm { background: linear-gradient(135deg, var(--teal), var(--deep)); }
+  .row.user .avatar-sm { background: linear-gradient(135deg, var(--accent), var(--teal-light)); }
+
+  .msg {
+    padding: 11px 15px;
+    border-radius: 16px;
+    max-width: 74%;
+    line-height: 1.5;
+    font-size: 14px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .row.user .msg {
+    background: linear-gradient(135deg, var(--bubble-user-1), var(--bubble-user-2));
+    color: white;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 3px 10px rgba(28,114,147,0.25);
+  }
+
+  .row.bot .msg {
+    background: var(--bubble-bot);
+    color: var(--ink);
+    border: 1px solid #E2EAEC;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 6px rgba(15,61,69,0.06);
+  }
+
+  .typing-dots {
+    display: flex;
+    gap: 4px;
+    padding: 4px 2px;
+  }
+  .typing-dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    animation: bounce 1.2s infinite ease-in-out;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-5px); opacity: 1; }
+  }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+    padding: 14px;
+    background: #fff;
+    border-top: 1px solid #EDF1F2;
+    flex-shrink: 0;
+  }
+
+  #userInput {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1.5px solid #DCE7E9;
+    border-radius: 24px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: #F7FAFB;
+  }
+
+  #userInput:focus {
+    border-color: var(--teal-light);
+    box-shadow: 0 0 0 3px rgba(47,155,196,0.15);
+    background: #fff;
+  }
+
+  #sendBtn {
+    padding: 0 22px;
+    background: linear-gradient(135deg, var(--teal), var(--deep));
+    color: white;
+    border: none;
+    border-radius: 24px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 12px rgba(15,61,69,0.25);
+  }
+
+  #sendBtn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(15,61,69,0.32); }
+  #sendBtn:active:not(:disabled) { transform: translateY(0); }
+  #sendBtn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+</style>
+</head>
+<body>
+
+<div class="chat-box">
+  <header>
+    <div class="bot-avatar">
+      <svg width="100%" height="100%" viewBox="0 0 190 165" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <linearGradient id="head" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#2F9BC4"/>
+            <stop offset="100%" stop-color="#0F3D45"/>
+          </linearGradient>
+        </defs>
+        <line x1="95" y1="15" x2="95" y2="35" stroke="#0F3D45" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="95" cy="15" r="8" fill="#21C6A8"/>
+        <rect x="25" y="35" width="140" height="120" rx="36" fill="url(#head)"/>
+        <ellipse cx="24" cy="87" rx="6" ry="14" fill="#1C7293"/>
+        <ellipse cx="166" cy="87" rx="6" ry="14" fill="#1C7293"/>
+        <rect x="45" y="57" width="100" height="70" rx="20" fill="#F7FAFB"/>
+        <circle cx="72" cy="89" r="9" fill="#0F3D45"/>
+        <circle cx="118" cy="89" r="9" fill="#0F3D45"/>
+        <path d="M60 75 L71 69" stroke="#0F3D45" stroke-width="3" stroke-linecap="round"/>
+        <path d="M60 75 L68 78" stroke="#0F3D45" stroke-width="3" stroke-linecap="round"/>
+        <path d="M130 75 L119 69" stroke="#0F3D45" stroke-width="3" stroke-linecap="round"/>
+        <path d="M130 75 L122 78" stroke="#0F3D45" stroke-width="3" stroke-linecap="round"/>
+        <path d="M83 109 Q95 119 107 109" stroke="#0F3D45" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <g transform="translate(157,53)">
+          <path d="M0 0 L-16 -9 Q-20 0 -16 9 Z" fill="#FF7FA6"/>
+          <path d="M0 0 L16 -9 Q20 0 16 9 Z" fill="#FF7FA6"/>
+          <circle cx="0" cy="0" r="5" fill="#E85A8A"/>
+        </g>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>Elly AI</h1>
+      <p><span class="status-dot"></span> Online — ask me anything</p>
+    </div>
+  </header>
+
+  <div id="messages"></div>
+
+  <div class="input-row">
+    <input type="text" id="userInput" placeholder="Type your question..." />
+    <button id="sendBtn">Send</button>
+  </div>
+</div>
+
+<script>
+  const messagesEl = document.getElementById("messages");
+  const inputEl = document.getElementById("userInput");
+  const sendBtn = document.getElementById("sendBtn");
+  let history = [];
+
+  function addMessage(role, text) {
+    const row = document.createElement("div");
+    row.className = "row " + (role === "user" ? "user" : "bot");
+
+    const avatar = document.createElement("div");
+    avatar.className = "avatar-sm";
+    avatar.textContent = role === "user" ? "U" : "E";
+
+    const bubble = document.createElement("div");
+    bubble.className = "msg";
+    bubble.textContent = text;
+
+    if (role === "user") {
+      row.appendChild(bubble);
+      row.appendChild(avatar);
+    } else {
+      row.appendChild(avatar);
+      row.appendChild(bubble);
+    }
+
+    messagesEl.appendChild(row);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return bubble;
+  }
+
+  function addTypingIndicator() {
+    const row = document.createElement("div");
+    row.className = "row bot";
+    row.id = "typingRow";
+
+    const avatar = document.createElement("div");
+    avatar.className = "avatar-sm";
+    avatar.textContent = "E";
+
+    const bubble = document.createElement("div");
+    bubble.className = "msg";
+    bubble.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+
+    row.appendChild(avatar);
+    row.appendChild(bubble);
+    messagesEl.appendChild(row);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function removeTypingIndicator() {
+    const row = document.getElementById("typingRow");
+    if (row) row.remove();
+  }
+
+  async function sendMessage() {
+    const text = inputEl.value.trim();
+    if (!text) return;
+
+    addMessage("user", text);
+    inputEl.value = "";
+    sendBtn.disabled = true;
+    addTypingIndicator();
+
+    try {
+      const res = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, history: history })
+      });
+      const data = await res.json();
+
+      removeTypingIndicator();
+
+      if (data.error) {
+        addMessage("bot", "Error: " + data.error);
+      } else {
+        addMessage("bot", data.reply);
+        history.push({ role: "user", content: text });
+        history.push({ role: "assistant", content: data.reply });
+      }
+    } catch (err) {
+      removeTypingIndicator();
+      addMessage("bot", "Something went wrong. Check the server console.");
+    } finally {
+      sendBtn.disabled = false;
+      inputEl.focus();
+    }
+  }
+
+  sendBtn.addEventListener("click", sendMessage);
+  inputEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") sendMessage();
+  });
+
+  window.addEventListener("load", () => {
+    addMessage("bot", "Hi! I'm Elly AI 👋 Ask me anything for your studies or just to chat.");
+  });
+</script>
+
+</body>
+</html>
